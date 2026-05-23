@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiszki — Sztuka współczesna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --bg-2: #16140f;
+    --paper: #f4eee3;
+    --ink: #1a1814;
+    --accent: #c9a86a;
+    --accent-soft: #b8945a;
+    --red: #a8482e;
+    --muted: #8a8378;
+    --line: rgba(244, 238, 227, 0.12);
+    --line-strong: rgba(244, 238, 227, 0.28);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(201, 168, 106, 0.06), transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(168, 72, 46, 0.05), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.96 0 0 0 0 0.93 0 0 0 0 0.89 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+  }
+
+  .container { position: relative; z-index: 2; }
+
+  /* ============ NAGŁÓWEK ============ */
+  header {
+    padding: 4rem 5vw 2rem;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .eyebrow::after {
+    content: '';
+    height: 1px;
+    background: var(--accent);
+    flex: 1;
+    opacity: 0.5;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--paper);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  .subtitle {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 56ch;
+    line-height: 1.6;
+  }
+
+  .stats-bar {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  .stat-label {
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  /* ============ STEROWANIE ============ */
+  .controls {
+    padding: 2rem 5vw;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    background: rgba(15, 14, 12, 0.6);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .mode-tabs {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 0;
+  }
+
+  .mode-tab {
+    background: transparent;
+    color: var(--paper);
+    border: none;
+    padding: 0.7rem 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-right: 1px solid var(--line-strong);
+  }
+
+  .mode-tab:last-child { border-right: none; }
+
+  .mode-tab:hover { background: rgba(201, 168, 106, 0.08); }
+
+  .mode-tab.active {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line-strong);
+    color: var(--paper);
+    padding: 0.7rem 0 0.7rem 1.8rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .search-box input:focus { border-bottom-color: var(--accent); }
+  .search-box input::placeholder { color: var(--muted); opacity: 0.7; }
+
+  .search-box::before {
+    content: '⌕';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 1.2rem;
+  }
+
+  .filter-toggle {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .chip {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    padding: 0.4rem 0.9rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 999px;
+  }
+
+  .chip:hover { color: var(--paper); border-color: var(--line-strong); }
+
+  .chip.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(201, 168, 106, 0.08);
+  }
+
+  /* ============ WIDOK GRIDU ============ */
+  .grid-view {
+    padding: 3rem 5vw 6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2.5rem 2rem;
+  }
+
+  .card {
+    cursor: pointer;
+    perspective: 1500px;
+    position: relative;
+    aspect-ratio: 3 / 4;
+    transition: transform 0.4s cubic-bezier(.2, .8, .2, 1);
+  }
+
+  .card:hover { transform: translateY(-6px); }
+
+  .card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(.65, .05, .35, 1);
+  }
+
+  .card.flipped .card-inner { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    overflow: hidden;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+  }
+
+  .card-front {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-img-wrap {
+    flex: 1;
+    overflow: hidden;
+    background: #000;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s ease;
+    filter: saturate(0.9) contrast(1.05);
+  }
+
+  .card:hover .card-img-wrap img { transform: scale(1.04); }
+
+  .card-num {
+    position: absolute;
+    top: 0.8rem;
+    left: 0.8rem;
+    background: rgba(15, 14, 12, 0.85);
+    color: var(--accent);
+    padding: 0.3rem 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    backdrop-filter: blur(4px);
+    z-index: 2;
+  }
+
+  .card-unsigned {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    background: var(--red);
+    color: var(--paper);
+    padding: 0.3rem 0.55rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  .card-prompt {
+    padding: 0.9rem 1rem 1rem;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .card-back {
+    transform: rotateY(180deg);
+    padding: 1.5rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: linear-gradient(160deg, var(--bg-2), #0a0908);
+    border: 1px solid var(--accent);
+  }
+
+  .card-back .back-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+  }
+
+  .card-back h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    line-height: 1.15;
+    color: var(--paper);
+    margin-bottom: 0.6rem;
+  }
+
+  .card-back .author {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .card-back .year {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-back .note {
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: rgba(244, 238, 227, 0.78);
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .card-back .note::-webkit-scrollbar { width: 3px; }
+  .card-back .note::-webkit-scrollbar-thumb { background: var(--accent); }
+
+  .card-back .footer {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ============ TRYB NAUKI ============ */
+  .study-view {
+    padding: 3rem 5vw 6rem;
+    display: none;
+    min-height: 70vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .study-view.active { display: flex; }
+
+  .study-progress {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 1px;
+    background: var(--line-strong);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  .study-card {
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 3 / 4;
+    perspective: 1800px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+  }
+
+  .study-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(.65, .05, .35, 1);
+  }
+
+  .study-card.flipped .study-card-inner { transform: rotateY(180deg); }
+
+  .study-card .card-face { border-color: var(--line-strong); }
+  .study-card .card-back { padding: 2.5rem; }
+  .study-card .card-back h3 { font-size: 2.5rem; }
+  .study-card .card-back .author { font-size: 1rem; }
+  .study-card .card-back .year { font-size: 1.2rem; }
+  .study-card .card-back .note { font-size: 1rem; }
+
+  .study-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    color: var(--paper);
+    padding: 0.8rem 1.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover {
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .btn-bad { border-color: var(--red); color: var(--red); }
+  .btn-bad:hover { background: var(--red); color: var(--paper); border-color: var(--red); }
+
+  .btn-good { border-color: var(--accent-soft); color: var(--accent-soft); }
+  .btn-good:hover { background: var(--accent-soft); color: var(--bg); }
+
+  /* ============ TRYB QUIZ ============ */
+  .quiz-view {
+    padding: 3rem 5vw 6rem;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .quiz-view.active { display: flex; }
+
+  .quiz-card {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .quiz-image-wrap {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #000;
+    border: 1px solid var(--line-strong);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quiz-image-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .quiz-question {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-option {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    padding: 1rem 1.3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .quiz-option:hover { border-color: var(--accent); background: rgba(201, 168, 106, 0.05); }
+
+  .quiz-option .letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    width: 1.5rem;
+  }
+
+  .quiz-option.correct {
+    border-color: var(--accent-soft);
+    background: rgba(184, 148, 90, 0.15);
+    color: var(--accent);
+  }
+
+  .quiz-option.wrong {
+    border-color: var(--red);
+    background: rgba(168, 72, 46, 0.15);
+    color: var(--red);
+  }
+
+  .quiz-option:disabled { cursor: default; }
+
+  .quiz-feedback {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    min-height: 1.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+
+  .quiz-feedback.correct { color: var(--accent); }
+  .quiz-feedback.wrong { color: var(--red); }
+
+  .quiz-score {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+
+  .score-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    color: var(--paper);
+  }
+
+  .score-val.good { color: var(--accent); }
+  .score-val.bad { color: var(--red); }
+
+  /* ============ STOPKA ============ */
+  footer {
+    padding: 3rem 5vw;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* ============ EMPTY ============ */
+  .empty-state {
+    grid-column: 1 / -1;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.4rem;
+  }
+
+  /* ============ ANIMACJE ============ */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card { animation: fadeIn 0.5s ease both; }
+
+  @media (max-width: 640px) {
+    .grid-view { grid-template-columns: repeat(2, 1fr); gap: 1.5rem 1rem; padding: 2rem 4vw 4rem; }
+    .controls { padding: 1.2rem 4vw; gap: 0.7rem; }
+    .mode-tab { padding: 0.55rem 0.8rem; font-size: 0.6rem; }
+    .search-box { width: 100%; flex: 1 0 100%; }
+    h1 { font-size: 2.5rem; }
+    header { padding: 2.5rem 4vw 1.5rem; }
+    .stats-bar { gap: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">
+      <span>Materiały do egzaminu</span>
+    </div>
+    <h1>Sztuka <em>współczesna</em><br>w fiszkach</h1>
+    <p class="subtitle">Kolekcja dzieł do nauki — przewracaj karty, ucz się po jednej, sprawdzaj się w quizie. Klikalne karty pokazują autora, tytuł i rok. Powodzenia na egzaminie.</p>
+    <div class="stats-bar">
+      <div class="stat"><span class="stat-num" id="stat-total">—</span><span class="stat-label">Dzieł łącznie</span></div>
+      <div class="stat"><span class="stat-num" id="stat-signed">—</span><span class="stat-label">Zidentyfikowanych</span></div>
+      <div class="stat"><span class="stat-num" id="stat-unsigned">—</span><span class="stat-label">Niepodpisanych</span></div>
+      <div class="stat"><span class="stat-num" id="stat-learned">—</span><span class="stat-label">Opanowanych</span></div>
+    </div>
+  </header>
+
+  <nav class="controls">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="grid">Galeria</button>
+      <button class="mode-tab" data-mode="study">Nauka</button>
+      <button class="mode-tab" data-mode="quiz">Quiz</button>
+    </div>
+    <div class="search-box">
+      <input type="text" id="search" placeholder="szukaj autora, tytułu, roku…">
+    </div>
+    <div class="filter-toggle">
+      <button class="chip" data-filter="all">wszystkie</button>
+      <button class="chip" data-filter="signed">podpisane</button>
+      <button class="chip" data-filter="unsigned">niepodpisane</button>
+      <button class="chip" data-filter="unlearned">do nauki</button>
+    </div>
+  </nav>
+
+  <main id="grid-view" class="grid-view"></main>
+
+  <section id="study-view" class="study-view">
+    <div class="study-progress">
+      <span id="study-counter">0 / 0</span>
+      <div class="progress-bar"><div class="progress-fill" id="study-progress-fill"></div></div>
+      <span id="study-learned-counter">0 opanowanych</span>
+    </div>
+    <div class="study-card" id="study-card">
+      <div class="study-card-inner">
+        <div class="card-face card-front">
+          <div class="card-img-wrap"><img id="study-img" src="" alt=""></div>
+          <div class="card-prompt">kliknij, aby obrócić</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="back-num" id="study-back-num"></div>
+          <h3 id="study-title"></h3>
+          <div class="author" id="study-author"></div>
+          <div class="year" id="study-year"></div>
+          <div class="note" id="study-note"></div>
+        </div>
+      </div>
+    </div>
+    <div class="study-actions">
+      <button class="btn" id="study-prev">← Poprzednia</button>
+      <button class="btn btn-bad" id="study-again">Powtórzyć</button>
+      <button class="btn btn-good" id="study-knew">Umiem</button>
+      <button class="btn" id="study-next">Następna →</button>
+      <button class="btn" id="study-shuffle">↻ Tasuj</button>
+      <button class="btn" id="study-reset">Zresetuj postępy</button>
+    </div>
+  </section>
+
+  <section id="quiz-view" class="quiz-view">
+    <div class="quiz-score">
+      <div>Dobre: <span class="score-val good" id="quiz-correct">0</span></div>
+      <div>Pomyłki: <span class="score-val bad" id="quiz-wrong">0</span></div>
+      <div>Trafność: <span class="score-val" id="quiz-acc">—</span></div>
+    </div>
+    <div class="quiz-card">
+      <div class="quiz-image-wrap"><img id="quiz-img" src="" alt=""></div>
+      <div class="quiz-question">Kto jest autorem tego dzieła?</div>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <div style="text-align: center;">
+        <button class="btn btn-primary" id="quiz-next">Następne pytanie →</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Notatki do egzaminu • przerzucaj karty kliknięciem • postępy zapisywane lokalnie
+  </footer>
+</div>
+
+<script>
+// =============== DANE ===============
+const works = [
+  // PODPISANE
+  { num: "01", file: "01__Ilya_Kabakov_the_man_who_flew_into_space_from_his_apartment_1985_Centre_Georges_Pompidou.jpg", author: "Ilya Kabakov", title: "The Man Who Flew into Space from His Apartment", year: "1985", note: "Instalacja w Centre Georges Pompidou. Ironiczne dzieło o ucieczce z radzieckiej rzeczywistości — pokój z katapultą zbudowaną do przebicia sufitu.", signed: true },
+  { num: "07", file: "07__Kaprow_Words_1962.jpg", author: "Allan Kaprow", title: "Words", year: "1962", note: "Środowisko (environment) — przestrzeń wypełniona ścianami pokrytymi słowami i zwojami papieru. Widz wchodzi w dzieło, którego doświadcza fizycznie.", signed: true },
+  { num: "09", file: "09_a_Claes_Oldenburg_The_store_1961.jpg", author: "Claes Oldenburg", title: "The Store", year: "1961", note: "Instalacja-sklep na nowojorskim East Village. Oldenburg sprzedawał gipsowe odlewy artykułów codziennego użytku — krytyka konsumpcjonizmu.", signed: true },
+  { num: "10", file: "10_claes_oldenburg_bedroom_ensemble_replica_i_1969.jpg", author: "Claes Oldenburg", title: "Bedroom Ensemble (Replica I)", year: "1969", note: "Pseudo-pokój hotelowy — perspektywiczne deformacje, sztuczne materiały (winyl, futro). Krytyka amerykańskiego mieszczaństwa i fałszywej intymności.", signed: true },
+  { num: "11a", file: "11_Erwin_Olaf_Królewska_krew.JPG", author: "Erwin Olaf", title: "Królewska krew (Royal Blood)", year: "2000", note: "Cykl fotograficzny — stylizowane portrety osób historycznych w momencie ich krwawej śmierci. Kicz, blask i przemoc.", signed: true },
+  { num: "11b", file: "11__Lucas_Samaras_The_Room_1964.jpg", author: "Lucas Samaras", title: "The Room (Bedroom)", year: "1964", note: "Rekonstrukcja własnej sypialni artysty — psychobiograficzna instalacja. Wnętrze jako autoportret, pamięć, intymność na widoku.", signed: true },
+  { num: "13a", file: "13__Martial_Raysse_Ciné_1964_Artifical_flowers_neon_lamp_and_various_materials_on_colored_photo_on_canvas.png", author: "Martial Raysse", title: "Ciné", year: "1964", note: "Nowy realizm — sztuczne kwiaty, neon i różne materiały na barwionym zdjęciu. Estetyka reklamy i gwiazd filmowych.", signed: true },
+  { num: "13b", file: "13__Paul_Thek_Death_of_a_Hippie.jpg", author: "Paul Thek", title: "Death of a Hippie (The Tomb)", year: "1967", note: "Pełnowymiarowa figura artysty leżąca w różowej, geometrycznej grobnicy. Pożegnanie z kontrkulturą lat 60.", signed: true },
+  { num: "16a", file: "16__Daniel_Buren_Within_and_Beyond_the_Frame_1973.png", author: "Daniel Buren", title: "Within and Beyond the Frame", year: "1973", note: "Buren rozciągnął swoje charakterystyczne paski (8,7 cm szerokości) z wnętrza galerii na zewnątrz, przez okno. Krytyka instytucjonalna.", signed: true },
+  { num: "16b", file: "16__Marcel_Broodthaers_Museet_dart_Modern_Department_des_Aigles_196872.jpg", author: "Marcel Broodthaers", title: "Musée d'Art Moderne, Département des Aigles", year: "1968–72", note: "Fikcyjne muzeum z fikcyjną kolekcją obrazów orłów. Klasyczne dzieło sztuki instytucjonalnej i ironicznej krytyki muzeum.", signed: true },
+  { num: "17", file: "17__a_Susan_Hiller_From_the_Freud_Museum_1942.jpg", author: "Susan Hiller", title: "From the Freud Museum", year: "1991–96", note: "Seria pudełek z artefaktami przypominającymi muzealne eksponaty. Antropologia archiwum, pamięci kulturowej i nieświadomości.", signed: true },
+  { num: "18a", file: "18__MaryKellyPostpartumDocumentIntroductionFoldedVests1973Fourunits8x10ins.png", author: "Mary Kelly", title: "Post-Partum Document", year: "1973–79", note: "Sześcioletni projekt dokumentujący relację matki z dzieckiem — pieluchy, ubranka, zapiski rozwoju. Sztuka feministyczna, psychoanaliza i codzienność.", signed: true },
+  { num: "21", file: "21__Faith_Wilding_Womb_Room_Crocheted_Environement_Womanhouse_LA_1972.png", author: "Faith Wilding", title: "Womb Room (Crocheted Environment)", year: "1972", note: "Część projektu Womanhouse w Los Angeles — szydełkowane środowisko jako metafora kobiecego ciała i przestrzeni domowej.", signed: true },
+  { num: "22", file: "22_Eberhard_Havekost_flaga.JPG", author: "Eberhard Havekost", title: "Flaga", year: "ok. 2000", note: "Niemiecki malarz pracujący na podstawie obrazów medialnych i cyfrowych. Spłaszczona, niejednoznaczna ikona narodowa.", signed: true },
+  { num: "23", file: "23__annhamiltonartistc06d0ffdbbe244c2bc0730d0baf8d72resize750_2.jpeg", author: "Ann Hamilton", title: "tropos (lub instalacja pokrewna)", year: "1993", note: "Wielkoskalowe instalacje wykorzystujące materiały organiczne (włosy końskie, papier, jedwab). Doświadczenie zmysłowe i pamięć.", signed: true },
+  { num: "26", file: "26__Roger_Kuntz_Pasadena_or_East_66_1962_oil.jpeg", author: "Roger Kuntz", title: "Pasadena or East 66", year: "1962", note: "Olej na płótnie — krajobraz autostrady, pas drogi i znaków. Amerykański realizm i poezja infrastruktury.", signed: true },
+  { num: "27", file: "27__Geregor_Schneider_Das_Totes_Haus.jpg", author: "Gregor Schneider", title: "Haus u r / Das Totes Haus u r", year: "1985–w toku", note: "Schneider od lat 80. przebudowuje wnętrze swojego domu w Rheydt — pokoje w pokojach, fałszywe ściany, klaustrofobia. Złota Lwica na Biennale 2001.", signed: true },
+  { num: "28a", file: "28__David_Hockney_2.jpg", author: "David Hockney", title: "praca z serii (m.in. baseny)", year: "lata 60.–70.", note: "Brytyjski malarz, ikona pop-artu, znany z kalifornijskich basenów, portretów i fotokolaży.", signed: true },
+  { num: "28b", file: "28__louise_bourgeois_passage_dangerauax_1997.jpg", author: "Louise Bourgeois", title: "Passage Dangereux", year: "1997", note: "Największa z 'komórek' (Cells) Bourgeois — klatkowa instalacja pełna obiektów, mebli i fragmentów ciała. Pamięć, lęk i przemoc.", signed: true },
+  { num: "31", file: "31__Mona_Hatoum_Current_Disturbance_1996.png", author: "Mona Hatoum", title: "Current Disturbance", year: "1996", note: "Drewniana konstrukcja klatek z 228 żarówkami pulsującymi nieregularnie, towarzyszy temu dźwięk prądu. Metafora uwięzienia i niepokoju.", signed: true },
+  { num: "33", file: "33__Mike_Nelson_The_Coral_Reef_2000.jpg", author: "Mike Nelson", title: "The Coral Reef", year: "2000", note: "Labirynt 15 pokoi — recepcji, biur, jaskini — które wciągają widza w paranoidalną fikcję. Mistyfikacja, narracja immersyjna.", signed: true },
+  { num: "39", file: "39__Rirkrit_Tiravanija_Untitled_1990_pad_thai.jpeg", author: "Rirkrit Tiravanija", title: "Untitled (Pad Thai)", year: "1990", note: "Artysta gotuje pad thai w galerii i karmi nim odwiedzających. Sztandarowy przykład estetyki relacyjnej (N. Bourriaud).", signed: true },
+  { num: "41", file: "41__DO_HO_SUH_Fallen_Star_1_5__20082011_3.jpeg", author: "Do Ho Suh", title: "Fallen Star 1/5", year: "2008–2011", note: "Tradycyjny koreański dom w skali 1:5 rozbity o ścianę nowoczesnego budynku. Migracja, dom, dwa światy.", signed: true },
+  { num: "42", file: "42__haegue_Yang_6_Sadong_30_Incheon_Korea_2006.jpeg", author: "Haegue Yang", title: "Sadong 30", year: "2006", note: "Yang oczyściła i przekształciła dom swojej babci w Incheon — środowisko z lampkami, wiatrakami i suszonymi roślinami. Pamięć i nieobecność.", signed: true },
+  { num: "43a", file: "43__erwin_wurm_inna_wersja_house_attack_2019.jpeg", author: "Erwin Wurm", title: "House Attack", year: "2006/2019", note: "Dom wbity dachem do góry w fasadę muzeum (MUMOK, Wiedeń). Absurd, humor i fizyka jako narzędzie krytyki.", signed: true },
+  { num: "43b", file: "43__erwin_wurm_narrow_house_inna_wersja.webp", author: "Erwin Wurm", title: "Narrow House", year: "2010", note: "Replika domu rodziców artysty zwężona do około 1 metra szerokości. Klaustrofobiczny portret mieszczańskiego dzieciństwa.", signed: true },
+  { num: "44", file: "44__jakub_szczęsny_dom_kereta_makieta.png", author: "Jakub Szczęsny", title: "Dom Kereta (makieta)", year: "2012", note: "Najwęższy dom świata — wciśnięty w szczelinę 92–152 cm między dwa budynki w Warszawie. Pracownia/rezydencja dla pisarza Etgara Kereta.", signed: true },
+  { num: "45", file: "45__Cornelia_Parker_CBE_RA_Cold_Dark_Matter_An_Exploded_View_1991.jpeg", author: "Cornelia Parker", title: "Cold Dark Matter: An Exploded View", year: "1991", note: "Wojskowi z brytyjskiej armii wysadzili w powietrze szopę. Parker zawiesiła szczątki na linach wokół jednej żarówki. Eksplozja zamrożona w czasie.", signed: true },
+  { num: "47", file: "47__monika_sosnowska_the_corridor_2003.jpeg", author: "Monika Sosnowska", title: "The Corridor", year: "2003", note: "Wąski korytarz prowadzący donikąd — modernistyczna architektura PRL jako klaustrofobiczna pułapka. Sztuka i pamięć przestrzenna.", signed: true },
+  { num: "48", file: "48__Mirosław_Bałka_How_it_is_2009.jpeg", author: "Mirosław Bałka", title: "How It Is", year: "2009", note: "Wielki ciemny kontener w Turbine Hall (Tate Modern) — widz wchodzi w absolutną ciemność. Holocaust, lęk, doświadczenie cielesne.", signed: true },
+  { num: "49", file: "49__monika_bonvicini_Stairway_to_Hell_zbliżenie_na_pękniętą_szybę_ochronną_2003.jpeg", author: "Monica Bonvicini", title: "Stairway to Hell", year: "2003", note: "Schody prowadzące donikąd, otoczone szybą — pękniętą i niebezpieczną. Tytuł nawiązuje do Led Zeppelin. Architektura, władza i przemoc.", signed: true },
+  { num: "50", file: "50__Mike_Nelson_Quiver_of_Arrows_2010__Courtesy_303_Gallery.jpeg", author: "Mike Nelson", title: "Quiver of Arrows", year: "2010", note: "Cztery połączone amerykańskie przyczepy kempingowe — instalacja narracyjna o nomadyzmie, pamięci, podróżnej Ameryce.", signed: true },
+  { num: "51b", file: "51__Richard_Serra_Titled_Arc_Federal_Plaza_NY_19819.png", author: "Richard Serra", title: "Tilted Arc", year: "1981 (usunięta w 1989)", note: "Stalowa płyta 36 m × 3,7 m wycinała plac federalny w Nowym Jorku na pół. Po protestach urzędników została usunięta — emblematyczna sprawa public artu.", signed: true },
+  { num: "5", file: "5__Marina_Abramovic_Rhythm_0_1974.png", author: "Marina Abramović", title: "Rhythm 0", year: "1974", note: "6-godzinny performance: artystka stała bez ruchu, na stole 72 przedmioty (od róży do pistoletu), publiczność mogła robić z nią cokolwiek. Granice przemocy.", signed: true },
+  { num: "58", file: "58_p_tony_cragg_canoe_1982.JPG", author: "Tony Cragg", title: "Canoe", year: "1982", note: "Sylwetka kajaka utworzona z plastikowych odpadów ułożonych na podłodze. Archeologia konsumpcji i ekologia w rzeźbie.", signed: true },
+  { num: "62", file: "62_peter_fischli_i_david_weiss4.jpg", author: "Peter Fischli & David Weiss", title: "Suddenly This Overview / Plötzlich diese Übersicht", year: "1981–w toku", note: "Setki małych, niewypalonych figurek z niemalowanej gliny przedstawiających sceny z historii, codzienności i wyobraźni. Ironiczna encyklopedia świata.", signed: true },
+  { num: "63", file: "63_stefan_nikolaev_marlboro_boxes_2004.jpg", author: "Stefan Nikolaev", title: "Marlboro Boxes", year: "2004", note: "Bułgarski artysta — rzeźby/obiekty z pudełek papierosów Marlboro. Brand, uzależnienie i geopolityka popkultury.", signed: true },
+  { num: "73", file: "73_Bertozzi_i_Casoni_per_manzoni_2009.jpg", author: "Bertozzi & Casoni", title: "Per Manzoni", year: "2009", note: "Włoski duet ceramików — hiperrealistyczne, ironiczne rzeźby. Tytuł odwołuje się do Piera Manzoniego ('Merda d'artista'). Przepych i śmieci.", signed: true },
+  { num: "77", file: "77a_rajkowska_satysfakcja_gwarantwana1.jpg", author: "Joanna Rajkowska", title: "Satysfakcja gwarantowana", year: "2000", note: "Seria fikcyjnych napojów z 'esencji' z fragmentów ciała artystki (włosy, paznokcie itp.). Komercyjna forma jako krytyka kapitalizmu i kobiecego ciała.", signed: true },
+  { num: "82", file: "82__Sylvie_Fleury_Acne_2014.png", author: "Sylvie Fleury", title: "Acne", year: "2014", note: "Szwajcarska artystka eksplorująca świat mody, luksusu i feministyczną krytykę konsumpcji. Tu nawiązanie do marki Acne Studios.", signed: true },
+  { num: "Hirst", file: "Damien_hirst_The_blood_of_Christ_2004.png", author: "Damien Hirst", title: "The Blood of Christ", year: "2004", note: "Charakterystyczne 'spot painting' Hirsta — okrągłe kropki w precyzyjnej siatce. Tytuł wprowadza religijne napięcie do pozornie chłodnej geometrii.", signed: true },
+  // ZIDENTYFIKOWANE Z PODPISÓW NA OBRAZIE (oznaczone jako 'signed' bo mają podpis na obrazie)
+  { num: "15", file: "15.png", author: "Paweł Althamer", title: "Wspólna sprawa", year: "2009", note: "Althamer ubrał mieszkańców Bródna w złote kombinezony i poleciał z nimi specjalnym samolotem LOT do Brukseli. Sztuka jako wspólnotowy gest.", signed: true },
+  { num: "18b", file: "18.png", author: "Marianne Heier", title: "Waldgänger", year: "ok. 2010", note: "Norweska artystka — wkomponowanie chaty z bali w przestrzeń biurową/instytucjonalną. Pamięć, natura i instytucja sztuki.", signed: true },
+  { num: "51a", file: "51.png", author: "Haim Steinbach", title: "Ultra Red #2", year: "1986", note: "Półka z dziewięcioma emaliowanymi garnkami, czterema lampami lawa i sześcioma cyfrowymi budzikami. Klasyczny appropriation art — towary jako rzeźba.", signed: true },
+  { num: "52", file: "52.png", author: "Jeff Koons", title: "Rabbit", year: "1986", note: "Stalowy odlew nadmuchiwanego króliczka — ikona neo-popu. W 2019 r. sprzedany za 91 mln USD, najdroższe dzieło żyjącego artysty na aukcji.", signed: true },
+  { num: "53", file: "53.png", author: "Allan McCollum", title: "Over Ten Thousand Individual Works", year: "1987–ok.", note: "Tysiące małych, ręcznie odlewanych obiektów, każdy nieco inny. Krytyka unikatu, masowości i fetyszu autorstwa.", signed: true },
+  { num: "54", file: "54.png", author: "Gabriel Orozco", title: "Ping-Pond Table", year: "1998", note: "Stół do ping-ponga w kształcie koniczyny z basenem z liliami wodnymi pośrodku. Gra dla czworga, hybryda sportu i ogrodu.", signed: true },
+  { num: "86", file: "86.png", author: "Joana Vasconcelos", title: "Marilyn", year: "2011", note: "Para gigantycznych szpilek wykonanych z setek garnków i pokrywek ze stali nierdzewnej. Feminizm, popkultura i przemysł — w Yorkshire Sculpture Park.", signed: true },
+  { num: "89", file: "89.png", author: "Fiona Banner", title: "Harrier and Jaguar", year: "2010", note: "Dwa autentyczne, wycofane samoloty bojowe RAF w Tate Britain — Jaguar pomalowany, Harrier zawieszony jak ptak. Wojna jako rzeźba w neoklasycznej sali.", signed: true },
+  { num: "70", file: "8__Zrzut_ekranu_20230415_o_23_16_02.png", author: "Zeng Fanzhi", title: "Tian'anmen", year: "2004", note: "Olej na płótnie — chińska brama Niebiańskiego Spokoju ze zdeformowaną twarzą Mao. Polityka, pamięć i ekspresjonistyczna technika.", signed: true },
+  // Z ZRZUTÓW EKRANU
+  { num: "z1", file: "Zrzut_ekranu_20240317_o_20_26_28.png", author: "Cerith Wyn Evans", title: "Eclipse", year: "2005", note: "Neonowy napis 'eclipse'. Walijski artysta używa języka, światła i ciszy jako materiałów rzeźbiarskich.", signed: true },
+  { num: "z2", file: "Zrzut_ekranu_20240317_o_20_26_48.png", author: "Vera Lutter", title: "Erie Basin, Red Hook, III: July 28", year: "2003", note: "Niemiecka fotografka — fotografie wykonane w camera obscura (cały kontener jako aparat). Obraz negatywowy, godzinami eksponowane krajobrazy przemysłowe.", signed: true },
+  { num: "z3", file: "Zrzut_ekranu_20240317_o_20_27_07.png", author: "Xu Yong", title: "Negatywy (Negatives)", year: "2015", note: "Chiński fotograf — przetwarza historyczne zdjęcia (m.in. z placu Tian'anmen) na negatywy. Pamięć, cenzura i widmowość obrazu.", signed: true },
+  { num: "z4", file: "Zrzut_ekranu_20240317_o_20_27_30.png", author: "Thomas Ruff", title: "Negatives", year: "2014", note: "Niemiecki fotograf z Düsseldorfu — seria negatywów wykonanych z dziewiętnastowiecznych fotografii orientalistycznych. Krytyka kolonialnego spojrzenia.", signed: true },
+  { num: "z5", file: "Zrzut_ekranu_20240317_o_20_27_55.png", author: "Aneta Grzeszykowska", title: "Negative Book", year: "2012/2013", note: "Polska artystka — autoportrety, w których ciało zostało pokryte czarną farbą tak, by w negatywie wyglądało jak normalne zdjęcie. Inwersja tożsamości.", signed: true },
+  { num: "z6", file: "Zrzut_ekranu_20240317_o_20_28_10.png", author: "Pieter Hugo", title: "There's a Place in Hell for Me & My Friends", year: "2011–12", note: "Południowoafrykański fotograf — portrety w skrajnie podbitych kanałach RGB ujawniających pigment pod skórą. Polityczny komentarz do rasy.", signed: true },
+  { num: "z7", file: "Zrzut_ekranu_20240317_o_20_28_28.png", author: "Robert Heinecken", title: "Are You Rea #15", year: "1968", note: "Amerykański artysta — offsetowe litografie powstałe przez naświetlanie stron magazynów. Krytyka mediów i seksualizacji w reklamie.", signed: true },
+  { num: "z8", file: "Zrzut_ekranu_20240317_o_20_28_48.png", author: "Sherrie Levine", title: "Untitled (After Walker Evans: Negative) #3", year: "1989", note: "Ikona appropriation artu — Levine 'zawłaszcza' fotografie Walkera Evansa i przedstawia je jako swoje. Tu wersja w negatywie. Krytyka oryginalności.", signed: true },
+  { num: "z9", file: "Zrzut_ekranu_20240317_o_20_29_13.png", author: "Ryszard Waśko", title: "Timeline No 17", year: "2010s", note: "Polski artysta konceptualny — obraz/cytat 'Did Marcel Duchamp steal Elsa's urinal?'. Komentarz do mitu Duchampa i autorstwa.", signed: true },
+  { num: "z10", file: "Zrzut_ekranu_20240317_o_20_29_32.png", author: "Jerzy Lewczyński", title: "Negatywy", year: "1975", note: "Polski fotograf — archeologia fotografii. Odzyskiwanie i ponowne odczytywanie zniszczonych, znalezionych negatywów. Pamięć i przypadek.", signed: true },
+  { num: "z11", file: "Zrzut_ekranu_20240317_o_20_29_57.png", author: "Marcel Duchamp", title: "With My Tongue in My Cheek", year: "1959", note: "Autoportret-relief: rysunek profilu Duchampa, do którego doklejony jest gipsowy odlew jego policzka. Ironia, dosłowność idiomu.", signed: true },
+  { num: "z12", file: "Zrzut_ekranu_20240317_o_20_30_12.png", author: "Rachel Whiteread", title: "House", year: "1993", note: "Odlew z betonu wnętrza całego wiktoriańskiego domu w londyńskim East Endzie — sam dom został zburzony. Nagroda Turnera 1993. Pamięć, nieobecność.", signed: true },
+  { num: "z13", file: "Zrzut_ekranu_20240317_o_20_30_29.png", author: "Gabriel Orozco", title: "My Hands Are My Heart", year: "1991", note: "Dwuczęściowa fotografia + obiekt: artysta ściska kawałek gliny tak, by uformować kształt serca. Intymna rzeźba dłonią.", signed: true },
+  { num: "z14", file: "Zrzut_ekranu_20240317_o_20_31_02.png", author: "Elżbieta Janicka", title: "Odd Place", year: "2006", note: "Polska fotografka — biała pustka w środku negatywu z widoczną perforacją. Fotografia bez przedmiotu, jako miejsce historycznej zbrodni (m.in. Treblinka).", signed: true },
+  { num: "z15", file: "Zrzut_ekranu_20250313_o_14_55_02.png", author: "Oleg Kulik", title: "I Bite America and America Bites Me", year: "1997", note: "Rosyjski artysta — performance, w którym przez dwa tygodnie żył w nowojorskiej galerii jako pies. Tytuł nawiązuje do 'I Like America' Beuysa.", signed: true },
+  { num: "z16", file: "Zrzut_ekranu_20250313_o_14_55_18.png", author: "Jemima Stehli", title: "Strip", year: "2000", note: "Brytyjska artystka — kobieta rozbiera się przed siedzącym mężczyzną (krytykiem, kuratorem), który trzyma w ręku spust aparatu. Władza spojrzenia.", signed: true },
+  { num: "z17", file: "Zrzut_ekranu_20250313_o_14_55_57.png", author: "Yasumasa Morimura", title: "A Requiem: Theater of Creativity / Self-portrait as Yves Klein", year: "2010", note: "Japoński artysta — wciela się w ikoniczne dzieła historii sztuki. Tu odgrywa 'Skok w pustkę' Yvesa Kleina (1960). Tożsamość, performans, cytat.", signed: true },
+  { num: "z18", file: "Zrzut_ekranu_20250313_o_14_56_17.png", author: "Ai Weiwei", title: "Dropping a Han Dynasty Urn", year: "1995", note: "Triptych fotograficzny — artysta upuszcza i rozbija autentyczną urnę z dynastii Han (sprzed 2000 lat). Krytyka stosunku Chin do dziedzictwa.", signed: true },
+  { num: "z19", file: "Zrzut_ekranu_20250313_o_14_56_41.png", author: "Shizuka Yokomizo", title: "Dear Stranger", year: "1998–2000", note: "Japońska artystka — wysyłała mieszkańcom listy z prośbą, by w określonym czasie stanęli w oknie. Fotografowała ich bez znajomości. Intymność z dystansu.", signed: true },
+  { num: "z20", file: "Zrzut_ekranu_20250313_o_14_56_58.png", author: "Zofia Kulik", title: "Figura swastyki", year: "1989", note: "Wieloelementowy fotomontaż w formie ozdobnej rozety. Ciało, polityka, dekoracyjność totalitaryzmów. Klasyka polskiej sztuki krytycznej.", signed: true },
+  { num: "rh", file: "bez_nazwy.jpg", author: "Richard Hamilton", title: "Co właściwie sprawia, że dzisiejsze mieszkania są tak odmienne, tak pociągające? / Zdumiewający Londyn", year: "1956 / 1967", note: "Klasyczny kolaż pop-art ('Just what is it…') z 1956 oraz cykl 'Zdumiewający Londyn' (Swingeing London) z 1967, dokumentujący aresztowanie Micka Jaggera.", signed: true }
+];
+
+// =============== STAN ===============
+const STORAGE_KEY = 'fiszki_progress_v1';
+const state = {
+  mode: 'grid',
+  filter: 'all',
+  search: '',
+  learned: new Set(),
+  studyIndex: 0,
+  studyOrder: [],
+  quizCurrent: null,
+  quizCorrect: 0,
+  quizWrong: 0,
+  quizAnswered: false
+};
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      state.learned = new Set(data.learned || []);
+      state.quizCorrect = data.quizCorrect || 0;
+      state.quizWrong = data.quizWrong || 0;
+    }
+  } catch (e) {}
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      learned: Array.from(state.learned),
+      quizCorrect: state.quizCorrect,
+      quizWrong: state.quizWrong
+    }));
+  } catch (e) {}
+}
+
+loadProgress();
+
+// =============== POMOCNICZE ===============
+function getFiltered() {
+  const q = state.search.trim().toLowerCase();
+  return works.filter(w => {
+    if (state.filter === 'signed' && !w.signed) return false;
+    if (state.filter === 'unsigned' && w.signed) return false;
+    if (state.filter === 'unlearned' && state.learned.has(w.num)) return false;
+    if (q) {
+      const blob = (w.author + ' ' + w.title + ' ' + w.year + ' ' + (w.note || '')).toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = works.length;
+  document.getElementById('stat-signed').textContent = works.filter(w => w.signed).length;
+  document.getElementById('stat-unsigned').textContent = works.filter(w => !w.signed).length;
+  document.getElementById('stat-learned').textContent = state.learned.size;
+}
+
+// =============== GRID ===============
+function renderGrid() {
+  const grid = document.getElementById('grid-view');
+  const items = getFiltered();
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty-state">Brak dzieł spełniających kryteria.</div>';
+    return;
+  }
+  grid.innerHTML = items.map((w, idx) => `
+    <div class="card" data-num="${w.num}" style="animation-delay: ${Math.min(idx * 0.03, 0.6)}s">
+      <div class="card-inner">
+        <div class="card-face card-front">
+          <div class="card-num">${w.num}${state.learned.has(w.num) ? ' ✓' : ''}</div>
+          ${w.signed ? '' : '<div class="card-unsigned">niepodpisane</div>'}
+          <div class="card-img-wrap">
+            <img src="images/${w.file}" alt="${w.title}" loading="lazy">
+          </div>
+          <div class="card-prompt">kliknij, aby zobaczyć autora</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="back-num">№ ${w.num}</div>
+          <h3>${w.title}</h3>
+          <div class="author">${w.author}</div>
+          <div class="year">${w.year}</div>
+          <div class="note">${w.note || ''}</div>
+          <div class="footer">kliknij, aby wrócić</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+  });
+}
+
+// =============== MODY ===============
+function setMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.getElementById('grid-view').style.display = mode === 'grid' ? 'grid' : 'none';
+  document.getElementById('study-view').classList.toggle('active', mode === 'study');
+  document.getElementById('quiz-view').classList.toggle('active', mode === 'quiz');
+  if (mode === 'study') initStudy();
+  if (mode === 'quiz') nextQuiz();
+}
+
+// =============== STUDY ===============
+function initStudy() {
+  const filtered = getFiltered();
+  state.studyOrder = filtered.map(w => w.num);
+  state.studyIndex = 0;
+  showStudyCard();
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showStudyCard() {
+  if (state.studyOrder.length === 0) {
+    document.getElementById('study-img').src = '';
+    document.getElementById('study-title').textContent = 'Brak fiszek do nauki';
+    document.getElementById('study-author').textContent = '';
+    document.getElementById('study-year').textContent = '';
+    document.getElementById('study-note').textContent = '';
+    document.getElementById('study-counter').textContent = '0 / 0';
+    document.getElementById('study-progress-fill').style.width = '0%';
+    return;
+  }
+  const card = document.getElementById('study-card');
+  card.classList.remove('flipped');
+  const num = state.studyOrder[state.studyIndex];
+  const w = works.find(x => x.num === num);
+  if (!w) return;
+  document.getElementById('study-img').src = `images/${w.file}`;
+  document.getElementById('study-img').alt = w.title;
+  document.getElementById('study-back-num').textContent = `№ ${w.num}${state.learned.has(w.num) ? ' • opanowane' : ''}`;
+  document.getElementById('study-title').textContent = w.title;
+  document.getElementById('study-author').textContent = w.author;
+  document.getElementById('study-year').textContent = w.year;
+  document.getElementById('study-note').textContent = w.note || '';
+  document.getElementById('study-counter').textContent = `${state.studyIndex + 1} / ${state.studyOrder.length}`;
+  document.getElementById('study-progress-fill').style.width = `${((state.studyIndex + 1) / state.studyOrder.length) * 100}%`;
+  document.getElementById('study-learned-counter').textContent = `${state.learned.size} opanowanych`;
+}
+
+document.getElementById('study-card').addEventListener('click', e => {
+  if (e.target.closest('.study-actions')) return;
+  document.getElementById('study-card').classList.toggle('flipped');
+});
+
+document.getElementById('study-next').addEventListener('click', () => {
+  if (state.studyOrder.length === 0) return;
+  state.studyIndex = (state.studyIndex + 1) % state.studyOrder.length;
+  showStudyCard();
+});
+document.getElementById('study-prev').addEventListener('click', () => {
+  if (state.studyOrder.length === 0) return;
+  state.studyIndex = (state.studyIndex - 1 + state.studyOrder.length) % state.studyOrder.length;
+  showStudyCard();
+});
+document.getElementById('study-shuffle').addEventListener('click', () => {
+  state.studyOrder = shuffle(state.studyOrder);
+  state.studyIndex = 0;
+  showStudyCard();
+});
+document.getElementById('study-knew').addEventListener('click', () => {
+  if (state.studyOrder.length === 0) return;
+  const num = state.studyOrder[state.studyIndex];
+  state.learned.add(num);
+  saveProgress();
+  updateStats();
+  state.studyIndex = (state.studyIndex + 1) % state.studyOrder.length;
+  showStudyCard();
+});
+document.getElementById('study-again').addEventListener('click', () => {
+  if (state.studyOrder.length === 0) return;
+  const num = state.studyOrder[state.studyIndex];
+  state.learned.delete(num);
+  saveProgress();
+  updateStats();
+  // przesuń na koniec
+  const [item] = state.studyOrder.splice(state.studyIndex, 1);
+  state.studyOrder.push(item);
+  if (state.studyIndex >= state.studyOrder.length) state.studyIndex = 0;
+  showStudyCard();
+});
+document.getElementById('study-reset').addEventListener('click', () => {
+  if (!confirm('Zresetować wszystkie postępy (opanowane karty i wynik quizu)?')) return;
+  state.learned.clear();
+  state.quizCorrect = 0;
+  state.quizWrong = 0;
+  saveProgress();
+  updateStats();
+  renderGrid();
+  showStudyCard();
+  updateQuizScore();
+});
+
+// =============== QUIZ ===============
+function nextQuiz() {
+  const pool = getFiltered();
+  if (pool.length < 4) {
+    document.getElementById('quiz-img').src = '';
+    document.getElementById('quiz-options').innerHTML = '<div class="empty-state">Potrzebne minimum 4 fiszki w wybranym filtrze.</div>';
+    document.getElementById('quiz-feedback').textContent = '';
+    return;
+  }
+  state.quizAnswered = false;
+  const correct = pool[Math.floor(Math.random() * pool.length)];
+  state.quizCurrent = correct;
+  // 3 losowe odp. + 1 poprawna
+  const others = works.filter(w => w.author !== correct.author);
+  const wrongOpts = shuffle(others).slice(0, 3);
+  const opts = shuffle([correct, ...wrongOpts]);
+  document.getElementById('quiz-img').src = `images/${correct.file}`;
+  const letters = ['A', 'B', 'C', 'D'];
+  document.getElementById('quiz-options').innerHTML = opts.map((opt, i) => `
+    <button class="quiz-option" data-author="${opt.author}">
+      <span class="letter">${letters[i]}</span>
+      <span>${opt.author}</span>
+    </button>
+  `).join('');
+  document.getElementById('quiz-feedback').textContent = '';
+  document.getElementById('quiz-feedback').className = 'quiz-feedback';
+
+  document.getElementById('quiz-options').querySelectorAll('.quiz-option').forEach(btn => {
+    btn.addEventListener('click', () => handleQuizAnswer(btn));
+  });
+}
+
+function handleQuizAnswer(btn) {
+  if (state.quizAnswered) return;
+  state.quizAnswered = true;
+  const chosen = btn.dataset.author;
+  const correct = state.quizCurrent.author;
+  document.querySelectorAll('.quiz-option').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.author === correct) b.classList.add('correct');
+    else if (b === btn) b.classList.add('wrong');
+  });
+  if (chosen === correct) {
+    state.quizCorrect++;
+    document.getElementById('quiz-feedback').textContent = `Brawo. „${state.quizCurrent.title}", ${state.quizCurrent.year}`;
+    document.getElementById('quiz-feedback').className = 'quiz-feedback correct';
+  } else {
+    state.quizWrong++;
+    document.getElementById('quiz-feedback').textContent = `Niestety. To „${state.quizCurrent.title}" — ${correct}, ${state.quizCurrent.year}`;
+    document.getElementById('quiz-feedback').className = 'quiz-feedback wrong';
+  }
+  saveProgress();
+  updateQuizScore();
+}
+
+function updateQuizScore() {
+  document.getElementById('quiz-correct').textContent = state.quizCorrect;
+  document.getElementById('quiz-wrong').textContent = state.quizWrong;
+  const total = state.quizCorrect + state.quizWrong;
+  const acc = total === 0 ? '—' : Math.round((state.quizCorrect / total) * 100) + '%';
+  document.getElementById('quiz-acc').textContent = acc;
+}
+
+document.getElementById('quiz-next').addEventListener('click', nextQuiz);
+
+// =============== EVENTY ===============
+document.querySelectorAll('.mode-tab').forEach(b => {
+  b.addEventListener('click', () => setMode(b.dataset.mode));
+});
+
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    state.filter = c.dataset.filter;
+    if (state.mode === 'grid') renderGrid();
+    if (state.mode === 'study') initStudy();
+    if (state.mode === 'quiz') nextQuiz();
+  });
+});
+document.querySelector('.chip[data-filter="all"]').classList.add('active');
+
+document.getElementById('search').addEventListener('input', e => {
+  state.search = e.target.value;
+  if (state.mode === 'grid') renderGrid();
+});
+
+// =============== INIT ===============
+updateStats();
+renderGrid();
+updateQuizScore();
+</script>
+</body>
+</html>
